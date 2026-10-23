@@ -2,8 +2,15 @@ import { Hono } from "hono";
 import api from "./api";
 import { basicAuth } from "./api/middlewares/basicAuth";
 import { serverAdapter, syncDashboardQueues } from "./dashboard";
+import { env } from "./config/env";
+import "./queues";
 
 const app = new Hono();
+(app as any).port = env.PORT;
+
+if (import.meta.main) {
+  console.log(`[Server] Qentral Web Engine running on http://localhost:${env.PORT}`);
+}
 
 app.get("/health", (c) => {
   return c.json({ status: "ok", timestamp: new Date().toISOString() });

@@ -3,9 +3,13 @@ import {
   fbstarReminderQueue,
   FBSTAR_REMINDER_QUEUE_NAME,
 } from "../../src/queues/fbstar-reminder.queue";
-import { getQueueByName, getAllQueues } from "../../src/queues/registry";
+import { getQueueByName, registerQueue } from "../../src/queues/registry";
 
 describe("FBStar Reminder Queue Registration", () => {
+  beforeEach(() => {
+    registerQueue(fbstarReminderQueue);
+  });
+
   it("should export fbstarReminderQueue with name fbstar-reminder-queue", () => {
     expect(FBSTAR_REMINDER_QUEUE_NAME).toBe("fbstar-reminder-queue");
     expect(fbstarReminderQueue.name).toBe("fbstar-reminder-queue");

@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, spyOn } from "bun:test";
 import app from "../src/server";
 import { env } from "../src/config/env";
 import { emailQueue } from "../src/queues/email.queue";
-import { registerQueue } from "../src/queues/registry";
+import { registerQueue, getAllQueues } from "../src/queues/registry";
 import { emailProcessor } from "../src/workers/email.worker";
 import type { PublishJobResponse, JobStatusResponse } from "../src/shared/types";
 
@@ -12,6 +12,12 @@ describe("End-to-End Sanity Test (Publish -> Process -> Result -> UI)", () => {
   beforeEach(() => {
     registerQueue(emailQueue);
     store.clear();
+
+    for (const q of getAllQueues()) {
+      spyOn(q, "getJobCounts").mockImplementation(async () => {
+        return { waiting: 0, active: 0, completed: 1, failed: 0, delayed: 0, paused: 0 };
+      });
+    }
 
     spyOn(emailQueue, "add").mockImplementation(async (name: string, data: any, opts?: any) => {
       const id = opts?.jobId || "e2e-job-001";
@@ -38,10 +44,6 @@ describe("End-to-End Sanity Test (Publish -> Process -> Result -> UI)", () => {
 
     spyOn(emailQueue, "getJob").mockImplementation(async (id: string) => {
       return store.get(id) || null;
-    });
-
-    spyOn(emailQueue, "getJobCounts").mockImplementation(async () => {
-      return { waiting: 0, active: 0, completed: 1, failed: 0, delayed: 0, paused: 0 };
     });
   });
 
