@@ -18,6 +18,10 @@ export interface EnvConfig {
   NIS_IFORTE_TICKETS_URL: string;
   NIS_TOKEN: string;
   WA_IFORTE_TARGET_NUMBER: string;
+  NIS_EMPLOYEE_SUMMARY_URL: string;
+  WA_TICKET_SUMMARY_TARGET_NUMBER: string;
+  DEFAULT_DEPARTMENT_ID: number;
+  DEFAULT_EXCLUDED_EMPLOYEE_IDS: string;
 }
 
 function parseNumber(value: string | undefined, defaultValue: number): number {
@@ -49,6 +53,12 @@ export function loadEnv(source: Record<string, string | undefined> = process.env
     NIS_IFORTE_TICKETS_URL: source.NIS_IFORTE_TICKETS_URL || "https://api.example.com/tickets/iforte",
     NIS_TOKEN: source.NIS_TOKEN || "",
     WA_IFORTE_TARGET_NUMBER: source.WA_IFORTE_TARGET_NUMBER || "",
+    NIS_EMPLOYEE_SUMMARY_URL:
+      source.NIS_EMPLOYEE_SUMMARY_URL ||
+      "https://api.example.com/tickets/employee-summary",
+    WA_TICKET_SUMMARY_TARGET_NUMBER: source.WA_TICKET_SUMMARY_TARGET_NUMBER || "",
+    DEFAULT_DEPARTMENT_ID: parseNumber(source.DEFAULT_DEPARTMENT_ID, 34),
+    DEFAULT_EXCLUDED_EMPLOYEE_IDS: source.DEFAULT_EXCLUDED_EMPLOYEE_IDS || "",
   };
 }
 

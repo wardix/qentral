@@ -71,6 +71,27 @@ export interface IforteReminderJobResult {
   message?: string;
 }
 
+export interface EmployeeSummaryJobData {
+  to?: string;
+  targetDate?: string;
+  target_date?: string;
+  departmentId?: number;
+  department_id?: number;
+  excludedEmployeeIds?: string;
+  excluded_employee_ids?: string;
+  [key: string]: any;
+}
+
+export interface EmployeeSummaryJobResult {
+  sent: boolean;
+  targetDate: string;
+  totalTickets: number;
+  totalEmployees: number;
+  recipient?: string;
+  sentAt?: string;
+  message?: string;
+}
+
 export interface RepeatableJobInfo {
   key: string;
   name: string;

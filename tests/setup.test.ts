@@ -28,6 +28,10 @@ describe("Setup & Environment Config", () => {
     expect(config.NIS_IFORTE_TICKETS_URL).toBe("https://api.example.com/tickets/iforte");
     expect(config.NIS_TOKEN).toBe("");
     expect(config.WA_IFORTE_TARGET_NUMBER).toBe("");
+    expect(config.NIS_EMPLOYEE_SUMMARY_URL).toBe("https://api.example.com/tickets/employee-summary");
+    expect(config.WA_TICKET_SUMMARY_TARGET_NUMBER).toBe("");
+    expect(config.DEFAULT_DEPARTMENT_ID).toBe(34);
+    expect(config.DEFAULT_EXCLUDED_EMPLOYEE_IDS).toBe("");
   });
 
   it("should read custom environment variables and parse numbers correctly", () => {
@@ -51,6 +55,10 @@ describe("Setup & Environment Config", () => {
       NIS_IFORTE_TICKETS_URL: "https://custom.nis.local/tickets",
       NIS_TOKEN: "custom-nis-secret",
       WA_IFORTE_TARGET_NUMBER: "62811111111@g.us",
+      NIS_EMPLOYEE_SUMMARY_URL: "https://custom.nis.local/employee-summary",
+      WA_TICKET_SUMMARY_TARGET_NUMBER: "62822222222@g.us",
+      DEFAULT_DEPARTMENT_ID: "42",
+      DEFAULT_EXCLUDED_EMPLOYEE_IDS: "1001,1002",
     });
 
     expect(custom.NODE_ENV).toBe("production");
@@ -72,6 +80,10 @@ describe("Setup & Environment Config", () => {
     expect(custom.NIS_IFORTE_TICKETS_URL).toBe("https://custom.nis.local/tickets");
     expect(custom.NIS_TOKEN).toBe("custom-nis-secret");
     expect(custom.WA_IFORTE_TARGET_NUMBER).toBe("62811111111@g.us");
+    expect(custom.NIS_EMPLOYEE_SUMMARY_URL).toBe("https://custom.nis.local/employee-summary");
+    expect(custom.WA_TICKET_SUMMARY_TARGET_NUMBER).toBe("62822222222@g.us");
+    expect(custom.DEFAULT_DEPARTMENT_ID).toBe(42);
+    expect(custom.DEFAULT_EXCLUDED_EMPLOYEE_IDS).toBe("1001,1002");
   });
 
   it("should handle 0 correctly for numeric values and fallback invalid numbers", () => {
