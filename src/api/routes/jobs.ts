@@ -71,6 +71,80 @@ jobsRoute.post("/:queueName", async (c) => {
   }
 });
 
+// GET /api/v1/jobs/:queueName/repeatable
+jobsRoute.get("/:queueName/repeatable", async (c) => {
+  const queueName = c.req.param("queueName");
+  const queue = getQueueByName(queueName);
+
+  if (!queue) {
+    return c.json(
+      {
+        error: "Not Found",
+        message: `Antrean '${queueName}' tidak ditemukan atau belum terdaftar.`,
+      },
+      404
+    );
+  }
+
+  try {
+    const repeatableJobs = await queue.getRepeatableJobs();
+    return c.json(
+      {
+        success: true,
+        queue: queueName,
+        data: repeatableJobs,
+      },
+      200
+    );
+  } catch (err: any) {
+    return c.json(
+      {
+        error: "Internal Server Error",
+        message: err?.message || "Gagal mengambil daftar repeatable jobs.",
+      },
+      500
+    );
+  }
+});
+
+// DELETE /api/v1/jobs/:queueName/repeatable/:key
+jobsRoute.delete("/:queueName/repeatable/:key", async (c) => {
+  const queueName = c.req.param("queueName");
+  const keyParam = c.req.param("key");
+
+  const queue = getQueueByName(queueName);
+  if (!queue) {
+    return c.json(
+      {
+        error: "Not Found",
+        message: `Antrean '${queueName}' tidak ditemukan atau belum terdaftar.`,
+      },
+      404
+    );
+  }
+
+  try {
+    const decodedKey = decodeURIComponent(keyParam);
+    const removed = await queue.removeRepeatableByKey(decodedKey);
+    return c.json(
+      {
+        success: true,
+        message: "Jadwal repeatable berhasil dihapus.",
+        removed,
+      },
+      200
+    );
+  } catch (err: any) {
+    return c.json(
+      {
+        error: "Internal Server Error",
+        message: err?.message || "Gagal menghapus repeatable job.",
+      },
+      500
+    );
+  }
+});
+
 // GET /api/v1/jobs/:queueName/:jobId
 jobsRoute.get("/:queueName/:jobId", async (c) => {
   const queueName = c.req.param("queueName");

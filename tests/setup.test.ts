@@ -21,6 +21,10 @@ describe("Setup & Environment Config", () => {
     expect(config.DEFAULT_WORKER_CONCURRENCY).toBe(5);
     expect(config.JOB_RETENTION_COMPLETED_COUNT).toBe(1000);
     expect(config.JOB_RETENTION_FAILED_COUNT).toBe(5000);
+    expect(config.PROM_TICKETS_URL).toBe("https://metrics.example.com/operator-tickets");
+    expect(config.WA_API_URL).toBe("https://api.whatsapp.example.com/v2/messages");
+    expect(config.WA_API_TOKEN).toBe("");
+    expect(config.WA_FBSTAR_TARGET_NUMBER).toBe("");
   });
 
   it("should read custom environment variables and parse numbers correctly", () => {
@@ -37,6 +41,10 @@ describe("Setup & Environment Config", () => {
       DEFAULT_WORKER_CONCURRENCY: "10",
       JOB_RETENTION_COMPLETED_COUNT: "500",
       JOB_RETENTION_FAILED_COUNT: "2000",
+      PROM_TICKETS_URL: "https://prometheus.internal/metrics",
+      WA_API_URL: "https://wa.internal/api/send",
+      WA_API_TOKEN: "custom-secret-wa-token",
+      WA_FBSTAR_TARGET_NUMBER: "62899999999@g.us",
     });
 
     expect(custom.NODE_ENV).toBe("production");
@@ -51,6 +59,10 @@ describe("Setup & Environment Config", () => {
     expect(custom.DEFAULT_WORKER_CONCURRENCY).toBe(10);
     expect(custom.JOB_RETENTION_COMPLETED_COUNT).toBe(500);
     expect(custom.JOB_RETENTION_FAILED_COUNT).toBe(2000);
+    expect(custom.PROM_TICKETS_URL).toBe("https://prometheus.internal/metrics");
+    expect(custom.WA_API_URL).toBe("https://wa.internal/api/send");
+    expect(custom.WA_API_TOKEN).toBe("custom-secret-wa-token");
+    expect(custom.WA_FBSTAR_TARGET_NUMBER).toBe("62899999999@g.us");
   });
 
   it("should handle 0 correctly for numeric values and fallback invalid numbers", () => {

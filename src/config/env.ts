@@ -11,6 +11,10 @@ export interface EnvConfig {
   DEFAULT_WORKER_CONCURRENCY: number;
   JOB_RETENTION_COMPLETED_COUNT: number;
   JOB_RETENTION_FAILED_COUNT: number;
+  PROM_TICKETS_URL: string;
+  WA_API_URL: string;
+  WA_API_TOKEN: string;
+  WA_FBSTAR_TARGET_NUMBER: string;
 }
 
 function parseNumber(value: string | undefined, defaultValue: number): number {
@@ -35,6 +39,10 @@ export function loadEnv(source: Record<string, string | undefined> = process.env
     DEFAULT_WORKER_CONCURRENCY: parseNumber(source.DEFAULT_WORKER_CONCURRENCY, 5),
     JOB_RETENTION_COMPLETED_COUNT: parseNumber(source.JOB_RETENTION_COMPLETED_COUNT, 1000),
     JOB_RETENTION_FAILED_COUNT: parseNumber(source.JOB_RETENTION_FAILED_COUNT, 5000),
+    PROM_TICKETS_URL: source.PROM_TICKETS_URL || "https://metrics.example.com/operator-tickets",
+    WA_API_URL: source.WA_API_URL || "https://api.whatsapp.example.com/v2/messages",
+    WA_API_TOKEN: source.WA_API_TOKEN || "",
+    WA_FBSTAR_TARGET_NUMBER: source.WA_FBSTAR_TARGET_NUMBER || "",
   };
 }
 

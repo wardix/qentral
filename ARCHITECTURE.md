@@ -175,6 +175,13 @@ Klien yang memegang `jobId` dapat memeriksa progres atau status eksekusi job kap
   ```
   *(Nilai `state`: `waiting` | `active` | `completed` | `failed` | `delayed`)*
 
+#### 3. Manajemen Jadwal Berulang (Repeatable / Cron Jobs)
+Klien dapat melihat dan menghapus jadwal berulang secara programatik via HTTP API:
+* **Daftar Jadwal**: `GET /api/v1/jobs/:queueName/repeatable`
+  * Response: `{ success: true, queue: string, data: RepeatableJobInfo[] }`
+* **Hapus Jadwal**: `DELETE /api/v1/jobs/:queueName/repeatable/:repeatKey`
+  * Response: `{ success: true, message: string, removed: boolean }`
+
 ---
 
 ### B. Melalui Akses Redis Langsung (Khusus Service Internal Node.js / Bun)

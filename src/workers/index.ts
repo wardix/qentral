@@ -1,5 +1,6 @@
 import type { Worker } from "bullmq";
 import { createEmailWorker } from "./email.worker";
+import { createFbstarReminderWorker } from "./fbstar-reminder.worker";
 
 let activeWorkers: Worker[] = [];
 
@@ -9,7 +10,8 @@ export function startWorkers(): Worker[] {
   }
 
   const emailWorker = createEmailWorker();
-  activeWorkers = [emailWorker];
+  const fbstarWorker = createFbstarReminderWorker();
+  activeWorkers = [emailWorker, fbstarWorker];
 
   return activeWorkers;
 }
@@ -26,3 +28,4 @@ export async function stopWorkers(): Promise<void> {
 }
 
 export * from "./email.worker";
+export * from "./fbstar-reminder.worker";

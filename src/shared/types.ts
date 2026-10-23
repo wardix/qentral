@@ -44,3 +44,27 @@ export interface EmailJobResult {
   recipient?: string;
   sentAt: string;
 }
+
+export interface FbstarReminderJobData {
+  to?: string;
+  [key: string]: any;
+}
+
+export interface FbstarReminderJobResult {
+  sent: boolean;
+  totalTickets: number;
+  recipient?: string;
+  sentAt?: string;
+  message?: string;
+}
+
+export interface RepeatableJobInfo {
+  key: string;
+  name: string;
+  id?: string | null;
+  endDate?: number | null;
+  tz?: string | null;
+  pattern?: string | null;
+  every?: number | null;
+  next?: number;
+}

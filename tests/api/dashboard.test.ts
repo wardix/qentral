@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, spyOn } from "bun:test";
 import app from "../../src/server";
 import { env } from "../../src/config/env";
 import { emailQueue } from "../../src/queues/email.queue";
-import { registerQueue } from "../../src/queues/registry";
+import { registerQueue, getAllQueues } from "../../src/queues/registry";
 
 describe("Bull-Board UI Dashboard (/ui)", () => {
   const validAuth = "Basic " + Buffer.from(`${env.DASHBOARD_USERNAME}:${env.DASHBOARD_PASSWORD}`).toString("base64");
@@ -10,9 +10,11 @@ describe("Bull-Board UI Dashboard (/ui)", () => {
 
   beforeEach(() => {
     registerQueue(emailQueue);
-    spyOn(emailQueue, "getJobCounts").mockImplementation(async () => {
-      return { waiting: 0, active: 0, completed: 0, failed: 0, delayed: 0, paused: 0 };
-    });
+    for (const q of getAllQueues()) {
+      spyOn(q, "getJobCounts").mockImplementation(async () => {
+        return { waiting: 0, active: 0, completed: 0, failed: 0, delayed: 0, paused: 0 };
+      });
+    }
   });
 
   it("should reject access to /ui without Basic Auth header with 401", async () => {
