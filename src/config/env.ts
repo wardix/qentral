@@ -15,6 +15,9 @@ export interface EnvConfig {
   WA_API_URL: string;
   WA_API_TOKEN: string;
   WA_FBSTAR_TARGET_NUMBER: string;
+  NIS_IFORTE_TICKETS_URL: string;
+  NIS_TOKEN: string;
+  WA_IFORTE_TARGET_NUMBER: string;
 }
 
 function parseNumber(value: string | undefined, defaultValue: number): number {
@@ -43,6 +46,9 @@ export function loadEnv(source: Record<string, string | undefined> = process.env
     WA_API_URL: source.WA_API_URL || "https://api.whatsapp.example.com/v2/messages",
     WA_API_TOKEN: source.WA_API_TOKEN || "",
     WA_FBSTAR_TARGET_NUMBER: source.WA_FBSTAR_TARGET_NUMBER || "",
+    NIS_IFORTE_TICKETS_URL: source.NIS_IFORTE_TICKETS_URL || "https://api.example.com/tickets/iforte",
+    NIS_TOKEN: source.NIS_TOKEN || "",
+    WA_IFORTE_TARGET_NUMBER: source.WA_IFORTE_TARGET_NUMBER || "",
   };
 }
 

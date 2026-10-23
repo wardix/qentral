@@ -25,6 +25,9 @@ describe("Setup & Environment Config", () => {
     expect(config.WA_API_URL).toBe("https://api.whatsapp.example.com/v2/messages");
     expect(config.WA_API_TOKEN).toBe("");
     expect(config.WA_FBSTAR_TARGET_NUMBER).toBe("");
+    expect(config.NIS_IFORTE_TICKETS_URL).toBe("https://api.example.com/tickets/iforte");
+    expect(config.NIS_TOKEN).toBe("");
+    expect(config.WA_IFORTE_TARGET_NUMBER).toBe("");
   });
 
   it("should read custom environment variables and parse numbers correctly", () => {
@@ -45,6 +48,9 @@ describe("Setup & Environment Config", () => {
       WA_API_URL: "https://wa.internal/api/send",
       WA_API_TOKEN: "custom-secret-wa-token",
       WA_FBSTAR_TARGET_NUMBER: "62899999999@g.us",
+      NIS_IFORTE_TICKETS_URL: "https://custom.nis.local/tickets",
+      NIS_TOKEN: "custom-nis-secret",
+      WA_IFORTE_TARGET_NUMBER: "62811111111@g.us",
     });
 
     expect(custom.NODE_ENV).toBe("production");
@@ -63,6 +69,9 @@ describe("Setup & Environment Config", () => {
     expect(custom.WA_API_URL).toBe("https://wa.internal/api/send");
     expect(custom.WA_API_TOKEN).toBe("custom-secret-wa-token");
     expect(custom.WA_FBSTAR_TARGET_NUMBER).toBe("62899999999@g.us");
+    expect(custom.NIS_IFORTE_TICKETS_URL).toBe("https://custom.nis.local/tickets");
+    expect(custom.NIS_TOKEN).toBe("custom-nis-secret");
+    expect(custom.WA_IFORTE_TARGET_NUMBER).toBe("62811111111@g.us");
   });
 
   it("should handle 0 correctly for numeric values and fallback invalid numbers", () => {

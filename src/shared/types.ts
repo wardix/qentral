@@ -58,6 +58,19 @@ export interface FbstarReminderJobResult {
   message?: string;
 }
 
+export interface IforteReminderJobData {
+  to?: string;
+  [key: string]: any;
+}
+
+export interface IforteReminderJobResult {
+  sent: boolean;
+  totalTickets: number;
+  recipient?: string;
+  sentAt?: string;
+  message?: string;
+}
+
 export interface RepeatableJobInfo {
   key: string;
   name: string;
