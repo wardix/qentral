@@ -16,6 +16,22 @@ app.get("/health", (c) => {
   return c.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
+app.get("/", (c) => {
+  const accept = c.req.header("accept") || "";
+  if (accept.includes("text/html")) {
+    return c.redirect("/ui");
+  }
+  return c.json({
+    name: "Qentral Job Queue Engine",
+    status: "running",
+    endpoints: {
+      health: "/health",
+      dashboard: "/ui",
+      api: "/api/v1/jobs/:queueName",
+    },
+  });
+});
+
 // Protect /ui and /ui/* with Basic Auth
 app.use("/ui", basicAuth);
 app.use("/ui/*", basicAuth);

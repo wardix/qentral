@@ -130,4 +130,50 @@ describe("Server Queue Initialization", () => {
   it("should configure port according to env.PORT", () => {
     expect((app as any).port).toBe(env.PORT);
   });
+
+  describe("GET / (Root Handler with Content Negotiation)", () => {
+    it("should redirect to /ui when request Accept header includes text/html", async () => {
+      const res = await app.request("/", {
+        method: "GET",
+        headers: {
+          Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        },
+      });
+
+      expect(res.status).toBe(302);
+      expect(res.headers.get("Location")).toBe("/ui");
+    });
+
+    it("should return service metadata JSON when request Accept header does not include text/html", async () => {
+      const res = await app.request("/", {
+        method: "GET",
+        headers: {
+          Accept: "application/json",
+        },
+      });
+
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data).toEqual({
+        name: "Qentral Job Queue Engine",
+        status: "running",
+        endpoints: {
+          health: "/health",
+          dashboard: "/ui",
+          api: "/api/v1/jobs/:queueName",
+        },
+      });
+    });
+
+    it("should return service metadata JSON by default when no Accept header is provided", async () => {
+      const res = await app.request("/", {
+        method: "GET",
+      });
+
+      expect(res.status).toBe(200);
+      const data = await res.json();
+      expect(data).toHaveProperty("name", "Qentral Job Queue Engine");
+      expect(data).toHaveProperty("status", "running");
+    });
+  });
 });
