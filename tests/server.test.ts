@@ -4,11 +4,12 @@ import { getQueueByName } from "../src/queues/registry";
 import { env } from "../src/config/env";
 
 describe("Server Queue Initialization", () => {
-  it("should have fbstar-reminder-queue, iforte-reminder-queue, email-queue, and employee-summary-queue registered on server startup", () => {
+  it("should have fbstar-reminder-queue, iforte-reminder-queue, email-queue, employee-summary-queue, and iforte-graphs-sync-queue registered on server startup", () => {
     const fbstarQueue = getQueueByName("fbstar-reminder-queue");
     const iforteQueue = getQueueByName("iforte-reminder-queue");
     const emailQueue = getQueueByName("email-queue");
     const employeeSummaryQueue = getQueueByName("employee-summary-queue");
+    const iforteGraphsSyncQueue = getQueueByName("iforte-graphs-sync-queue");
 
     expect(fbstarQueue).toBeDefined();
     expect(fbstarQueue?.name).toBe("fbstar-reminder-queue");
@@ -18,6 +19,34 @@ describe("Server Queue Initialization", () => {
     expect(emailQueue?.name).toBe("email-queue");
     expect(employeeSummaryQueue).toBeDefined();
     expect(employeeSummaryQueue?.name).toBe("employee-summary-queue");
+    expect(iforteGraphsSyncQueue).toBeDefined();
+    expect(iforteGraphsSyncQueue?.name).toBe("iforte-graphs-sync-queue");
+  });
+
+  it("should not return 404 for registered iforte-graphs-sync-queue on POST /api/v1/jobs/iforte-graphs-sync-queue", async () => {
+    const queue = getQueueByName("iforte-graphs-sync-queue");
+    if (queue) {
+      spyOn(queue, "add").mockImplementation(async () => {
+        return { id: "test-sync-id" } as any;
+      });
+    }
+
+    const res = await app.request("/api/v1/jobs/iforte-graphs-sync-queue", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": env.API_KEY,
+      },
+      body: JSON.stringify({
+        jobName: "sync-iforte-graphs",
+        data: {},
+      }),
+    });
+
+    expect(res.status).not.toBe(404);
+    const body = (await res.json()) as any;
+    expect(body.success).toBe(true);
+    expect(body.queue).toBe("iforte-graphs-sync-queue");
   });
 
   it("should not return 404 for registered employee-summary-queue on POST /api/v1/jobs/employee-summary-queue", async () => {

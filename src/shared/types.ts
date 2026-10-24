@@ -92,6 +92,22 @@ export interface EmployeeSummaryJobResult {
   message?: string;
 }
 
+export interface IforteGraphsSyncJobData {
+  graphNameFilter?: string;
+  graph_name_filter?: string;
+  graphIdPrefix?: string;
+  graph_id_prefix?: string;
+  [key: string]: any;
+}
+
+export interface IforteGraphsSyncJobResult {
+  success: boolean;
+  totalGraphsFound: number;
+  syncedCount: number;
+  message?: string;
+  syncedAt: string;
+}
+
 export interface RepeatableJobInfo {
   key: string;
   name: string;

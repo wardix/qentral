@@ -3,6 +3,7 @@ import { createEmailWorker } from "./email.worker";
 import { createFbstarReminderWorker } from "./fbstar-reminder.worker";
 import { createIforteReminderWorker } from "./iforte-reminder.worker";
 import { createEmployeeSummaryWorker } from "./employee-summary.worker";
+import { createIforteGraphsSyncWorker } from "./iforte-graphs-sync.worker";
 
 let activeWorkers: Worker[] = [];
 
@@ -15,7 +16,14 @@ export function startWorkers(): Worker[] {
   const fbstarWorker = createFbstarReminderWorker();
   const iforteWorker = createIforteReminderWorker();
   const employeeSummaryWorker = createEmployeeSummaryWorker();
-  activeWorkers = [emailWorker, fbstarWorker, iforteWorker, employeeSummaryWorker];
+  const iforteGraphsSyncWorker = createIforteGraphsSyncWorker();
+  activeWorkers = [
+    emailWorker,
+    fbstarWorker,
+    iforteWorker,
+    employeeSummaryWorker,
+    iforteGraphsSyncWorker,
+  ];
 
   return activeWorkers;
 }
@@ -35,3 +43,4 @@ export * from "./email.worker";
 export * from "./fbstar-reminder.worker";
 export * from "./iforte-reminder.worker";
 export * from "./employee-summary.worker";
+export * from "./iforte-graphs-sync.worker";

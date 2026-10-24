@@ -22,6 +22,12 @@ export interface EnvConfig {
   WA_TICKET_SUMMARY_TARGET_NUMBER: string;
   DEFAULT_DEPARTMENT_ID: number;
   DEFAULT_EXCLUDED_EMPLOYEE_IDS: string;
+  IFORTE_ZABBIX_URL: string;
+  IFORTE_ZABBIX_USERNAME: string;
+  IFORTE_ZABBIX_PASSWORD: string;
+  IFORTE_ZABBIX_GRAPH_NAME_FILTER: string;
+  IFORTE_GRAPH_ID_PREFIX: string;
+  NIS_GRAPH_SYNC_URL: string;
 }
 
 function parseNumber(value: string | undefined, defaultValue: number): number {
@@ -59,6 +65,15 @@ export function loadEnv(source: Record<string, string | undefined> = process.env
     WA_TICKET_SUMMARY_TARGET_NUMBER: source.WA_TICKET_SUMMARY_TARGET_NUMBER || "",
     DEFAULT_DEPARTMENT_ID: parseNumber(source.DEFAULT_DEPARTMENT_ID, 34),
     DEFAULT_EXCLUDED_EMPLOYEE_IDS: source.DEFAULT_EXCLUDED_EMPLOYEE_IDS || "",
+    IFORTE_ZABBIX_URL:
+      source.IFORTE_ZABBIX_URL || "https://zabbix.example.com/api_jsonrpc.php",
+    IFORTE_ZABBIX_USERNAME: source.IFORTE_ZABBIX_USERNAME || "",
+    IFORTE_ZABBIX_PASSWORD: source.IFORTE_ZABBIX_PASSWORD || "",
+    IFORTE_ZABBIX_GRAPH_NAME_FILTER:
+      source.IFORTE_ZABBIX_GRAPH_NAME_FILTER || "NUSANET-",
+    IFORTE_GRAPH_ID_PREFIX: source.IFORTE_GRAPH_ID_PREFIX || "iforte-",
+    NIS_GRAPH_SYNC_URL:
+      source.NIS_GRAPH_SYNC_URL || "https://api.example.com/v1/sync/graphs",
   };
 }
 

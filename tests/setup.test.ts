@@ -32,6 +32,12 @@ describe("Setup & Environment Config", () => {
     expect(config.WA_TICKET_SUMMARY_TARGET_NUMBER).toBe("");
     expect(config.DEFAULT_DEPARTMENT_ID).toBe(34);
     expect(config.DEFAULT_EXCLUDED_EMPLOYEE_IDS).toBe("");
+    expect(config.IFORTE_ZABBIX_URL).toBe("https://zabbix.example.com/api_jsonrpc.php");
+    expect(config.IFORTE_ZABBIX_USERNAME).toBe("");
+    expect(config.IFORTE_ZABBIX_PASSWORD).toBe("");
+    expect(config.IFORTE_ZABBIX_GRAPH_NAME_FILTER).toBe("NUSANET-");
+    expect(config.IFORTE_GRAPH_ID_PREFIX).toBe("iforte-");
+    expect(config.NIS_GRAPH_SYNC_URL).toBe("https://api.example.com/v1/sync/graphs");
   });
 
   it("should read custom environment variables and parse numbers correctly", () => {
@@ -59,6 +65,12 @@ describe("Setup & Environment Config", () => {
       WA_TICKET_SUMMARY_TARGET_NUMBER: "62822222222@g.us",
       DEFAULT_DEPARTMENT_ID: "42",
       DEFAULT_EXCLUDED_EMPLOYEE_IDS: "1001,1002",
+      IFORTE_ZABBIX_URL: "https://zabbix.internal/rpc",
+      IFORTE_ZABBIX_USERNAME: "zabbix_user",
+      IFORTE_ZABBIX_PASSWORD: "zabbix_secret_pass",
+      IFORTE_ZABBIX_GRAPH_NAME_FILTER: "NUSAFIBER-",
+      IFORTE_GRAPH_ID_PREFIX: "custom-iforte-",
+      NIS_GRAPH_SYNC_URL: "https://custom.nis.local/sync-graphs",
     });
 
     expect(custom.NODE_ENV).toBe("production");
@@ -84,6 +96,12 @@ describe("Setup & Environment Config", () => {
     expect(custom.WA_TICKET_SUMMARY_TARGET_NUMBER).toBe("62822222222@g.us");
     expect(custom.DEFAULT_DEPARTMENT_ID).toBe(42);
     expect(custom.DEFAULT_EXCLUDED_EMPLOYEE_IDS).toBe("1001,1002");
+    expect(custom.IFORTE_ZABBIX_URL).toBe("https://zabbix.internal/rpc");
+    expect(custom.IFORTE_ZABBIX_USERNAME).toBe("zabbix_user");
+    expect(custom.IFORTE_ZABBIX_PASSWORD).toBe("zabbix_secret_pass");
+    expect(custom.IFORTE_ZABBIX_GRAPH_NAME_FILTER).toBe("NUSAFIBER-");
+    expect(custom.IFORTE_GRAPH_ID_PREFIX).toBe("custom-iforte-");
+    expect(custom.NIS_GRAPH_SYNC_URL).toBe("https://custom.nis.local/sync-graphs");
   });
 
   it("should handle 0 correctly for numeric values and fallback invalid numbers", () => {
