@@ -38,6 +38,7 @@ describe("Setup & Environment Config", () => {
     expect(config.IFORTE_ZABBIX_GRAPH_NAME_FILTER).toBe("NUSANET-");
     expect(config.IFORTE_GRAPH_ID_PREFIX).toBe("iforte-");
     expect(config.NIS_GRAPH_SYNC_URL).toBe("https://api.example.com/v1/sync/graphs");
+    expect(config.SILENCE_ALERT_API_URL).toBe("https://alertmanager.example.com/api/v2/silences");
   });
 
   it("should read custom environment variables and parse numbers correctly", () => {

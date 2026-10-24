@@ -28,6 +28,7 @@ export interface EnvConfig {
   IFORTE_ZABBIX_GRAPH_NAME_FILTER: string;
   IFORTE_GRAPH_ID_PREFIX: string;
   NIS_GRAPH_SYNC_URL: string;
+  SILENCE_ALERT_API_URL: string;
 }
 
 function parseNumber(value: string | undefined, defaultValue: number): number {
@@ -74,6 +75,9 @@ export function loadEnv(source: Record<string, string | undefined> = process.env
     IFORTE_GRAPH_ID_PREFIX: source.IFORTE_GRAPH_ID_PREFIX || "iforte-",
     NIS_GRAPH_SYNC_URL:
       source.NIS_GRAPH_SYNC_URL || "https://api.example.com/v1/sync/graphs",
+    SILENCE_ALERT_API_URL:
+      source.SILENCE_ALERT_API_URL ||
+      "https://alertmanager.example.com/api/v2/silences",
   };
 }
 
