@@ -44,6 +44,9 @@ describe("Setup & Environment Config", () => {
     expect(config.NUSAWORK_CLIENT_SECRET).toBe("");
     expect(config.NUSAWORK_EMPLOYEE_API_URL).toBe("https://nusawork.example.com/api/v4.1/employee/filter");
     expect(config.BIRTHDAY_PIC_PHONES).toBe("[]");
+    expect(config.BIRTHDAY_GIFT_VOUCHER_TEMPLATE_PATH).toBe("./assets/birthday-voucher-template.png");
+    expect(config.BIRTHDAY_GIFT_VOUCHER_PERIOD_DAYS).toBe(30);
+    expect(config.BIRTHDAY_WISHES).toBe("Happy birthday");
   });
 
   it("should read custom environment variables and parse numbers correctly", () => {

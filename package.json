@@ -25,6 +25,7 @@
     "@bull-board/api": "^9.10.4",
     "@bull-board/hono": "^9.10.4",
     "@hono/bun": "^1.0.1",
+    "@napi-rs/canvas": "^1.0.13",
     "bullmq": "^6.4.0",
     "hono": "^4.13.13",
     "ioredis": "^6.0.0"

@@ -34,6 +34,9 @@ export interface EnvConfig {
   NUSAWORK_CLIENT_SECRET: string;
   NUSAWORK_EMPLOYEE_API_URL: string;
   BIRTHDAY_PIC_PHONES: string;
+  BIRTHDAY_GIFT_VOUCHER_TEMPLATE_PATH: string;
+  BIRTHDAY_GIFT_VOUCHER_PERIOD_DAYS: number;
+  BIRTHDAY_WISHES: string;
 }
 
 function parseNumber(value: string | undefined, defaultValue: number): number {
@@ -92,6 +95,14 @@ export function loadEnv(source: Record<string, string | undefined> = process.env
       source.NUSAWORK_EMPLOYEE_API_URL ||
       "https://nusawork.example.com/api/v4.1/employee/filter",
     BIRTHDAY_PIC_PHONES: source.BIRTHDAY_PIC_PHONES || "[]",
+    BIRTHDAY_GIFT_VOUCHER_TEMPLATE_PATH:
+      source.BIRTHDAY_GIFT_VOUCHER_TEMPLATE_PATH ||
+      "./assets/birthday-voucher-template.png",
+    BIRTHDAY_GIFT_VOUCHER_PERIOD_DAYS: parseNumber(
+      source.BIRTHDAY_GIFT_VOUCHER_PERIOD_DAYS,
+      30
+    ),
+    BIRTHDAY_WISHES: source.BIRTHDAY_WISHES || "Happy birthday",
   };
 }
 

@@ -9,6 +9,8 @@ import {
   resolveRecipientPhones,
   getNusaworkToken,
   fetchNusaworkEmployees,
+  filterTodayBirthdays,
+  renderBirthdayVoucher,
 } from "../../src/workers/employee-birthday.worker";
 import { env } from "../../src/config/env";
 
@@ -70,6 +72,50 @@ describe("Employee Birthday Worker & Processor", () => {
       expect(result.map((e) => e.employee_id)).toEqual(["EMP01", "EMP03"]);
     });
 
+    it("filterTodayBirthdays should match employees born today and exclude internships", () => {
+      const todayDate = new Date("2026-10-25T10:00:00+07:00");
+      const employees = [
+        {
+          employee_id: "EMP10",
+          full_name: "Birthday Boy",
+          date_of_birth: "1993-10-25",
+          status_join: "Permanent",
+        },
+        {
+          employee_id: "EMP11",
+          full_name: "Birthday Intern",
+          date_of_birth: "2001-10-25",
+          status_join: "Internship", // exclude
+        },
+        {
+          employee_id: "EMP12",
+          full_name: "Tomorrow Person",
+          date_of_birth: "1995-10-26",
+          status_join: "Permanent",
+        },
+      ];
+
+      const result = filterTodayBirthdays(employees, todayDate);
+      expect(result).toHaveLength(1);
+      expect(result[0].employee_id).toBe("EMP10");
+    });
+
+    it("renderBirthdayVoucher should render text onto template and return PNG buffer", async () => {
+      const buffer = await renderBirthdayVoucher({
+        templatePath: "./assets/birthday-voucher-template.png",
+        name: "Budi Santoso",
+        endPeriodDate: new Date("2026-11-25T00:00:00+07:00"),
+      });
+
+      expect(buffer).toBeDefined();
+      expect(buffer.length).toBeGreaterThan(1000);
+      // PNG header check: \x89PNG
+      expect(buffer[0]).toBe(0x89);
+      expect(buffer[1]).toBe(0x50);
+      expect(buffer[2]).toBe(0x4e);
+      expect(buffer[3]).toBe(0x47);
+    });
+
     it("formatUpcomingBirthdayMessage should format message with Upcoming birthday header", () => {
       const employees = [
         { employee_id: "1", full_name: "Siti Aminah", date_of_birth: "1995-11-01" },
@@ -120,7 +166,7 @@ describe("Employee Birthday Worker & Processor", () => {
   });
 
   describe("Processor Execution", () => {
-    it("Case 1 (Happy Path): should fetch token, employees, sort chronologically, and send WA with 'Upcoming birthday:' header", async () => {
+    it("Case 1 (Happy Path - Upcoming Reminder): should fetch token, employees, sort chronologically, and send WA with 'Upcoming birthday:' header", async () => {
       const fixedNow = new Date("2026-10-25T10:00:00+07:00");
       const waSentPayloads: any[] = [];
 
@@ -201,7 +247,7 @@ describe("Employee Birthday Worker & Processor", () => {
       expect(waSentPayloads[1].to).toBe("628987654321");
     });
 
-    it("Case 2 (No Employees Next Week): should early return without calling WA API", async () => {
+    it("Case 2 (Upcoming Reminder - No Employees Next Week): should early return without calling WA API", async () => {
       let waCalled = false;
 
       globalThis.fetch = mock(async (url: any) => {
@@ -313,6 +359,117 @@ describe("Employee Birthday Worker & Processor", () => {
       };
 
       await expect(employeeBirthdayProcessor(mockJob as any)).rejects.toThrow("Gagal mengirim WhatsApp");
+    });
+
+    it("Case 5 (Happy Path - Daily Voucher): should render voucher image and send to birthday employee and CC to PIC", async () => {
+      const fixedToday = new Date("2026-10-25T10:00:00+07:00");
+      const waSentPayloads: any[] = [];
+
+      globalThis.fetch = mock(async (url: any, init?: any) => {
+        const urlStr = String(url);
+        if (urlStr === env.NUSAWORK_TOKEN_API_URL) {
+          return new Response(JSON.stringify({ access_token: "nusawork-token-secret" }), { status: 200 });
+        }
+        if (urlStr === env.NUSAWORK_EMPLOYEE_API_URL) {
+          return new Response(
+            JSON.stringify({
+              data: {
+                list: [
+                  {
+                    employee_id: "EMP01",
+                    full_name: "Budi Santoso",
+                    date_of_birth: "1994-10-25",
+                    mobile_phone: "081234567890",
+                    status_join: "Permanent",
+                  },
+                ],
+              },
+            }),
+            { status: 200 }
+          );
+        }
+        if (urlStr === env.WA_API_URL) {
+          waSentPayloads.push(JSON.parse(init?.body as string));
+          return new Response(JSON.stringify({ status: "success", message_id: "wa-img-1" }), { status: 200 });
+        }
+        return new Response("Not found", { status: 404 });
+      }) as any;
+
+      const mockJob = {
+        id: "voucher-job-1",
+        name: "daily-voucher",
+        data: {
+          referenceDate: fixedToday.toISOString(),
+          ccPhones: ["628999888777"],
+        },
+        updateProgress: mock(async () => {}),
+        log: mock(async () => {}),
+      };
+
+      const result = await employeeBirthdayProcessor(mockJob as any);
+
+      expect(result.sent).toBe(true);
+      expect(result.totalEmployees).toBe(1);
+      // Sent to 1 employee + 1 CC
+      expect(waSentPayloads).toHaveLength(2);
+
+      // Verify payload format
+      expect(waSentPayloads[0].to).toBe("6281234567890"); // formatted from 081234567890
+      expect(waSentPayloads[0].body).toBe("image");
+      expect(waSentPayloads[0].image).toBeDefined();
+      expect(waSentPayloads[0].caption).toBe(env.BIRTHDAY_WISHES);
+
+      expect(waSentPayloads[1].to).toBe("628999888777");
+      expect(waSentPayloads[1].body).toBe("image");
+    });
+
+    it("Case 6 (Daily Voucher - No Birthdays Today): should early return without sending WA", async () => {
+      let waCalled = false;
+
+      globalThis.fetch = mock(async (url: any) => {
+        const urlStr = String(url);
+        if (urlStr === env.NUSAWORK_TOKEN_API_URL) {
+          return new Response(JSON.stringify({ access_token: "token-abc" }), { status: 200 });
+        }
+        if (urlStr === env.NUSAWORK_EMPLOYEE_API_URL) {
+          return new Response(
+            JSON.stringify({
+              data: {
+                list: [
+                  {
+                    employee_id: "EMP99",
+                    full_name: "Someone Else",
+                    date_of_birth: "1994-01-01",
+                    status_join: "Permanent",
+                  },
+                ],
+              },
+            }),
+            { status: 200 }
+          );
+        }
+        if (urlStr === env.WA_API_URL) {
+          waCalled = true;
+          return new Response(JSON.stringify({ status: "success" }), { status: 200 });
+        }
+        return new Response("Not found", { status: 404 });
+      }) as any;
+
+      const mockJob = {
+        id: "voucher-job-2",
+        name: "daily-voucher",
+        data: {
+          referenceDate: "2026-10-25T10:00:00+07:00",
+        },
+        updateProgress: mock(async () => {}),
+        log: mock(async () => {}),
+      };
+
+      const result = await employeeBirthdayProcessor(mockJob as any);
+
+      expect(result.sent).toBe(false);
+      expect(result.totalEmployees).toBe(0);
+      expect(waCalled).toBe(false);
     });
   });
 
