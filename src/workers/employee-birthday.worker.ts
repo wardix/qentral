@@ -44,8 +44,8 @@ export interface RenderVoucherOptions {
 
 export function formatPhoneNumber(phoneNumber?: string): string {
   if (!phoneNumber) return "";
-  const cleaned = phoneNumber.replace(/@c\.us$/, "");
-  if (cleaned.includes("@g.us")) return cleaned;
+  const cleaned = phoneNumber.replace(/@c\.us$/, "").replace(/@s\.whatsapp\.net$/, "");
+  if (cleaned.includes("@g.us") || cleaned.includes("@lid")) return cleaned;
   const digitsOnly = cleaned.replace(/[^0-9]/g, "");
   return digitsOnly.startsWith("0") ? "62" + digitsOnly.substring(1) : digitsOnly;
 }

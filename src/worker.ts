@@ -29,6 +29,17 @@ if (import.meta.main) {
   attachSignalListeners();
   console.log("[Worker Engine] Starting workers...");
   const workers = startWorkers();
+  for (const worker of workers) {
+    worker.on("active", (job) => {
+      console.log(`[Worker:${worker.name}] Job ${job.id} (${job.name}) started`);
+    });
+    worker.on("completed", (job, result) => {
+      console.log(`[Worker:${worker.name}] Job ${job.id} (${job.name}) completed:`, JSON.stringify(result));
+    });
+    worker.on("failed", (job, err) => {
+      console.log(`[Worker:${worker.name}] Job ${job?.id} (${job?.name}) failed:`, err.message);
+    });
+  }
   console.log(`[Worker Engine] ${workers.length} worker(s) active and listening for jobs.`);
 }
 

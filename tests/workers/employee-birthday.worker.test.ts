@@ -11,6 +11,7 @@ import {
   fetchNusaworkEmployees,
   filterTodayBirthdays,
   renderBirthdayVoucher,
+  formatPhoneNumber,
 } from "../../src/workers/employee-birthday.worker";
 import { env } from "../../src/config/env";
 
@@ -26,6 +27,14 @@ describe("Employee Birthday Worker & Processor", () => {
   });
 
   describe("Utility & Domain Functions", () => {
+    it("formatPhoneNumber should normalize 08 to 628, strip @c.us / @s.whatsapp.net, but preserve @lid and @g.us", () => {
+      expect(formatPhoneNumber("081234567890")).toBe("6281234567890");
+      expect(formatPhoneNumber("081234567890@c.us")).toBe("6281234567890");
+      expect(formatPhoneNumber("6281234567890@s.whatsapp.net")).toBe("6281234567890");
+      expect(formatPhoneNumber("120363028392819@g.us")).toBe("120363028392819@g.us");
+      expect(formatPhoneNumber("201219301703927@lid")).toBe("201219301703927@lid");
+    });
+
     it("getUpcomingDateRange should calculate 7 upcoming dates starting next Sunday", () => {
       // 2026-10-25 is a Sunday in Asia/Jakarta
       const sundayDate = new Date("2026-10-25T10:00:00+07:00");
@@ -365,6 +374,59 @@ describe("Employee Birthday Worker & Processor", () => {
       expect(waSentPayloads[0].to).toBe("628999111222");
       expect(waSentPayloads[0].body).toBe("image");
       expect(result.recipients).toEqual(["628999111222"]);
+    });
+
+    it("Case 9 (Daily Voucher with @lid notify): should send voucher to @lid without stripping @lid", async () => {
+      const waSentPayloads: any[] = [];
+
+      globalThis.fetch = mock(async (url: any, init?: any) => {
+        const urlStr = String(url);
+        if (urlStr === env.NUSAWORK_TOKEN_API_URL) {
+          return new Response(JSON.stringify({ access_token: "nusawork-token-secret" }), { status: 200 });
+        }
+        if (urlStr === env.NUSAWORK_EMPLOYEE_API_URL) {
+          return new Response(
+            JSON.stringify({
+              data: {
+                list: [
+                  {
+                    employee_id: "EMP33",
+                    full_name: "Nov Three",
+                    date_of_birth: "1991-11-03",
+                    mobile_phone: "081234567899",
+                    status_join: "Permanent",
+                  },
+                ],
+              },
+            }),
+            { status: 200 }
+          );
+        }
+        if (urlStr === env.WA_API_URL) {
+          waSentPayloads.push(JSON.parse(init?.body as string));
+          return new Response(JSON.stringify({ status: "success", message_id: "wa-img-lid" }), { status: 200 });
+        }
+        return new Response("Not found", { status: 404 });
+      }) as any;
+
+      const mockJob = {
+        id: "voucher-job-lid",
+        name: "daily-voucher",
+        data: {
+          targetDate: "11-03",
+          notify: "201219301703927@lid",
+          sendToEmployee: false,
+        },
+        updateProgress: mock(async () => {}),
+        log: mock(async () => {}),
+      };
+
+      const result = await employeeBirthdayProcessor(mockJob as any);
+
+      expect(result.sent).toBe(true);
+      expect(waSentPayloads).toHaveLength(1);
+      expect(waSentPayloads[0].to).toBe("201219301703927@lid");
+      expect(result.recipients).toEqual(["201219301703927@lid"]);
     });
 
     it("Case 3 (Unhappy Path - Nusawork Token Error): should throw when token API fails", async () => {
