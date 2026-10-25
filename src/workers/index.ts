@@ -5,6 +5,7 @@ import { createIforteReminderWorker } from "./iforte-reminder.worker";
 import { createEmployeeSummaryWorker } from "./employee-summary.worker";
 import { createIforteGraphsSyncWorker } from "./iforte-graphs-sync.worker";
 import { createAlertSilenceWorker } from "./alert-silence.worker";
+import { createEmployeeBirthdayWorker } from "./employee-birthday.worker";
 
 let activeWorkers: Worker[] = [];
 
@@ -19,6 +20,7 @@ export function startWorkers(): Worker[] {
   const employeeSummaryWorker = createEmployeeSummaryWorker();
   const iforteGraphsSyncWorker = createIforteGraphsSyncWorker();
   const alertSilenceWorker = createAlertSilenceWorker();
+  const employeeBirthdayWorker = createEmployeeBirthdayWorker();
   activeWorkers = [
     emailWorker,
     fbstarWorker,
@@ -26,6 +28,7 @@ export function startWorkers(): Worker[] {
     employeeSummaryWorker,
     iforteGraphsSyncWorker,
     alertSilenceWorker,
+    employeeBirthdayWorker,
   ];
 
   return activeWorkers;
@@ -48,3 +51,4 @@ export * from "./iforte-reminder.worker";
 export * from "./employee-summary.worker";
 export * from "./iforte-graphs-sync.worker";
 export * from "./alert-silence.worker";
+export * from "./employee-birthday.worker";

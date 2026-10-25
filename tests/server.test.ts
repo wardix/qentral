@@ -4,13 +4,14 @@ import { getQueueByName } from "../src/queues/registry";
 import { env } from "../src/config/env";
 
 describe("Server Queue Initialization", () => {
-  it("should have fbstar-reminder-queue, iforte-reminder-queue, email-queue, employee-summary-queue, iforte-graphs-sync-queue, and alert-silence-queue registered on server startup", () => {
+  it("should have fbstar-reminder-queue, iforte-reminder-queue, email-queue, employee-summary-queue, iforte-graphs-sync-queue, alert-silence-queue, and employee-birthday-queue registered on server startup", () => {
     const fbstarQueue = getQueueByName("fbstar-reminder-queue");
     const iforteQueue = getQueueByName("iforte-reminder-queue");
     const emailQueue = getQueueByName("email-queue");
     const employeeSummaryQueue = getQueueByName("employee-summary-queue");
     const iforteGraphsSyncQueue = getQueueByName("iforte-graphs-sync-queue");
     const alertSilenceQueue = getQueueByName("alert-silence-queue");
+    const employeeBirthdayQueue = getQueueByName("employee-birthday-queue");
 
     expect(fbstarQueue).toBeDefined();
     expect(fbstarQueue?.name).toBe("fbstar-reminder-queue");
@@ -24,6 +25,34 @@ describe("Server Queue Initialization", () => {
     expect(iforteGraphsSyncQueue?.name).toBe("iforte-graphs-sync-queue");
     expect(alertSilenceQueue).toBeDefined();
     expect(alertSilenceQueue?.name).toBe("alert-silence-queue");
+    expect(employeeBirthdayQueue).toBeDefined();
+    expect(employeeBirthdayQueue?.name).toBe("employee-birthday-queue");
+  });
+
+  it("should not return 404 for registered employee-birthday-queue on POST /api/v1/jobs/employee-birthday-queue", async () => {
+    const queue = getQueueByName("employee-birthday-queue");
+    if (queue) {
+      spyOn(queue, "add").mockImplementation(async () => {
+        return { id: "test-bday-id" } as any;
+      });
+    }
+
+    const res = await app.request("/api/v1/jobs/employee-birthday-queue", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": env.API_KEY,
+      },
+      body: JSON.stringify({
+        jobName: "upcoming-reminder",
+        data: {},
+      }),
+    });
+
+    expect(res.status).not.toBe(404);
+    const body = (await res.json()) as any;
+    expect(body.success).toBe(true);
+    expect(body.queue).toBe("employee-birthday-queue");
   });
 
   it("should not return 404 for registered alert-silence-queue on POST /api/v1/jobs/alert-silence-queue", async () => {

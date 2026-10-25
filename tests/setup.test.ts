@@ -39,6 +39,11 @@ describe("Setup & Environment Config", () => {
     expect(config.IFORTE_GRAPH_ID_PREFIX).toBe("iforte-");
     expect(config.NIS_GRAPH_SYNC_URL).toBe("https://api.example.com/v1/sync/graphs");
     expect(config.SILENCE_ALERT_API_URL).toBe("https://alertmanager.example.com/api/v2/silences");
+    expect(config.NUSAWORK_TOKEN_API_URL).toBe("https://nusawork.example.com/auth/api/oauth/token");
+    expect(config.NUSAWORK_CLIENT_ID).toBe("");
+    expect(config.NUSAWORK_CLIENT_SECRET).toBe("");
+    expect(config.NUSAWORK_EMPLOYEE_API_URL).toBe("https://nusawork.example.com/api/v4.1/employee/filter");
+    expect(config.BIRTHDAY_PIC_PHONES).toBe("[]");
   });
 
   it("should read custom environment variables and parse numbers correctly", () => {

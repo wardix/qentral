@@ -29,6 +29,11 @@ export interface EnvConfig {
   IFORTE_GRAPH_ID_PREFIX: string;
   NIS_GRAPH_SYNC_URL: string;
   SILENCE_ALERT_API_URL: string;
+  NUSAWORK_TOKEN_API_URL: string;
+  NUSAWORK_CLIENT_ID: string;
+  NUSAWORK_CLIENT_SECRET: string;
+  NUSAWORK_EMPLOYEE_API_URL: string;
+  BIRTHDAY_PIC_PHONES: string;
 }
 
 function parseNumber(value: string | undefined, defaultValue: number): number {
@@ -78,6 +83,15 @@ export function loadEnv(source: Record<string, string | undefined> = process.env
     SILENCE_ALERT_API_URL:
       source.SILENCE_ALERT_API_URL ||
       "https://alertmanager.example.com/api/v2/silences",
+    NUSAWORK_TOKEN_API_URL:
+      source.NUSAWORK_TOKEN_API_URL ||
+      "https://nusawork.example.com/auth/api/oauth/token",
+    NUSAWORK_CLIENT_ID: source.NUSAWORK_CLIENT_ID || "",
+    NUSAWORK_CLIENT_SECRET: source.NUSAWORK_CLIENT_SECRET || "",
+    NUSAWORK_EMPLOYEE_API_URL:
+      source.NUSAWORK_EMPLOYEE_API_URL ||
+      "https://nusawork.example.com/api/v4.1/employee/filter",
+    BIRTHDAY_PIC_PHONES: source.BIRTHDAY_PIC_PHONES || "[]",
   };
 }
 
