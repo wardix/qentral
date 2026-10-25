@@ -8,9 +8,12 @@ export { EMPLOYEE_BIRTHDAY_QUEUE_NAME };
 
 export interface EmployeeBirthdayJobData {
   referenceDate?: string;
+  targetDate?: string; // "YYYY-MM-DD" or "MM-DD"
   recipients?: string[];
   notify?: string | string[];
+  to?: string;
   ccPhones?: string[];
+  sendToEmployee?: boolean;
 }
 
 export interface EmployeeBirthdayJobResult {
@@ -41,7 +44,9 @@ export interface RenderVoucherOptions {
 
 export function formatPhoneNumber(phoneNumber?: string): string {
   if (!phoneNumber) return "";
-  const digitsOnly = phoneNumber.replace(/[^0-9]/g, "");
+  const cleaned = phoneNumber.replace(/@c\.us$/, "");
+  if (cleaned.includes("@g.us")) return cleaned;
+  const digitsOnly = cleaned.replace(/[^0-9]/g, "");
   return digitsOnly.startsWith("0") ? "62" + digitsOnly.substring(1) : digitsOnly;
 }
 
@@ -100,9 +105,32 @@ export function filterUpcomingBirthdays(
 
 export function filterTodayBirthdays(
   employees: NusaworkEmployee[],
-  referenceDate?: Date
+  targetDateOrRef?: string | Date
 ): NusaworkEmployee[] {
-  const today = referenceDate ? new Date(referenceDate) : new Date();
+  let targetMMDD: string | undefined;
+
+  if (typeof targetDateOrRef === "string") {
+    const trimmed = targetDateOrRef.trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+      targetMMDD = trimmed.substring(5); // "MM-DD"
+    } else if (/^\d{2}-\d{2}$/.test(trimmed)) {
+      targetMMDD = trimmed; // "MM-DD"
+    } else if (/^\d{1,2}-\d{1,2}$/.test(trimmed)) {
+      const parts = trimmed.split("-");
+      targetMMDD = `${parts[0].padStart(2, "0")}-${parts[1].padStart(2, "0")}`;
+    }
+  }
+
+  if (targetMMDD) {
+    return employees
+      .filter((employee) => employee.status_join !== "Internship")
+      .filter((employee) => {
+        if (!employee.date_of_birth) return false;
+        return employee.date_of_birth.substring(5) === targetMMDD;
+      });
+  }
+
+  const today = targetDateOrRef ? new Date(targetDateOrRef) : new Date();
   const formatter = new Intl.DateTimeFormat("id-ID", {
     timeZone: "Asia/Jakarta",
     day: "2-digit",
@@ -316,28 +344,83 @@ export async function employeeBirthdayProcessor(
     job.name === "sendGiftVoucherToBirthdayEmployees";
 
   if (isDailyVoucher) {
-    // 2. Filter yang ultah hari ini
-    const todayEmployees = filterTodayBirthdays(employees, refDate);
+    const targetDate = job.data?.targetDate;
+    const sendToEmployee = job.data?.sendToEmployee ?? (targetDate ? false : true);
+
+    const notifyList: string[] = [];
+    if (job.data?.notify) {
+      if (Array.isArray(job.data.notify)) {
+        notifyList.push(...job.data.notify);
+      } else if (typeof job.data.notify === "string") {
+        notifyList.push(job.data.notify);
+      }
+    }
+    if (job.data?.to) {
+      notifyList.push(job.data.to);
+    }
+    if (job.data?.recipients && targetDate) {
+      notifyList.push(...job.data.recipients);
+    }
+    const requesterRecipients = [...new Set(notifyList.map(formatPhoneNumber).filter(Boolean))];
+
+    // 2. Filter yang ultah
+    const todayEmployees = filterTodayBirthdays(employees, targetDate || refDate);
 
     if (todayEmployees.length === 0) {
       await job.updateProgress(100);
-      await job.log("[Birthday] Tidak ada karyawan yang berulang tahun hari ini.");
+      const msg = targetDate
+        ? `Tidak ada karyawan yang berulang tahun pada tanggal ${targetDate}`
+        : "Tidak ada karyawan yang berulang tahun hari ini";
+      await job.log(`[Birthday] ${msg}.`);
+
+      if (requesterRecipients.length > 0) {
+        for (const reqPhone of requesterRecipients) {
+          const safeTo = reqPhone.endsWith("@c.us") ? reqPhone.replace("@c.us", "") : reqPhone;
+          await fetch(env.WA_API_URL, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${env.WA_API_TOKEN}`,
+            },
+            body: JSON.stringify({
+              to: safeTo,
+              body: "text",
+              text: `ℹ️ ${msg}.`,
+            }),
+          });
+        }
+      }
+
       return {
         sent: false,
         totalEmployees: 0,
-        message: "Tidak ada karyawan yang berulang tahun hari ini",
+        message: msg,
       };
     }
 
-    const ccPhones =
-      job.data?.ccPhones ||
-      resolveRecipientPhones(job.data);
+    let ccPhones: string[] = [];
+    if (job.data?.ccPhones) {
+      ccPhones = job.data.ccPhones.map(formatPhoneNumber).filter(Boolean);
+    } else if (!targetDate && sendToEmployee) {
+      ccPhones = resolveRecipientPhones(job.data);
+    }
 
     await job.updateProgress(60);
-    await job.log(`[Birthday] Mengirim voucher untuk ${todayEmployees.length} karyawan ultah hari ini`);
+    await job.log(`[Birthday] Mengirim voucher untuk ${todayEmployees.length} karyawan ultah`);
+
+    let baseDate = refDate;
+    if (targetDate) {
+      const trimmed = targetDate.trim();
+      if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+        baseDate = new Date(`${trimmed}T00:00:00`);
+      } else if (/^\d{2}-\d{2}$/.test(trimmed)) {
+        const currentYear = refDate.getFullYear();
+        baseDate = new Date(`${currentYear}-${trimmed}T00:00:00`);
+      }
+    }
 
     const voucherPeriodDays = env.BIRTHDAY_GIFT_VOUCHER_PERIOD_DAYS;
-    const endPeriodDate = new Date(refDate.getTime() + 86400000 * voucherPeriodDays);
+    const endPeriodDate = new Date(baseDate.getTime() + 86400000 * voucherPeriodDays);
 
     const sentRecipients: string[] = [];
 
@@ -348,10 +431,17 @@ export async function employeeBirthdayProcessor(
       });
       const imageBase64 = voucherBuffer.toString("base64");
 
-      const contactNo = formatPhoneNumber(emp.whatsapp || emp.mobile_phone);
-      if (contactNo) {
-        await sendWaImage(contactNo, imageBase64, env.BIRTHDAY_WISHES);
-        sentRecipients.push(contactNo);
+      if (sendToEmployee) {
+        const contactNo = formatPhoneNumber(emp.whatsapp || emp.mobile_phone);
+        if (contactNo) {
+          await sendWaImage(contactNo, imageBase64, env.BIRTHDAY_WISHES);
+          sentRecipients.push(contactNo);
+        }
+      }
+
+      for (const reqPhone of requesterRecipients) {
+        await sendWaImage(reqPhone, imageBase64, env.BIRTHDAY_WISHES);
+        sentRecipients.push(reqPhone);
       }
 
       for (const ccPhone of ccPhones) {
@@ -361,7 +451,7 @@ export async function employeeBirthdayProcessor(
     }
 
     await job.updateProgress(100);
-    await job.log("[Birthday] Berhasil mengirimkan voucher ulang tahun hari ini.");
+    await job.log("[Birthday] Berhasil mengirimkan voucher ulang tahun.");
 
     return {
       sent: true,
