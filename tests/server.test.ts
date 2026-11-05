@@ -4,7 +4,7 @@ import { getQueueByName } from "../src/queues/registry";
 import { env } from "../src/config/env";
 
 describe("Server Queue Initialization", () => {
-  it("should have fbstar-reminder-queue, iforte-reminder-queue, email-queue, employee-summary-queue, iforte-graphs-sync-queue, alert-silence-queue, and employee-birthday-queue registered on server startup", () => {
+  it("should have fbstar-reminder-queue, iforte-reminder-queue, email-queue, employee-summary-queue, iforte-graphs-sync-queue, alert-silence-queue, employee-birthday-queue, and nusacontact-contact-sync-queue registered on server startup", () => {
     const fbstarQueue = getQueueByName("fbstar-reminder-queue");
     const iforteQueue = getQueueByName("iforte-reminder-queue");
     const emailQueue = getQueueByName("email-queue");
@@ -12,6 +12,7 @@ describe("Server Queue Initialization", () => {
     const iforteGraphsSyncQueue = getQueueByName("iforte-graphs-sync-queue");
     const alertSilenceQueue = getQueueByName("alert-silence-queue");
     const employeeBirthdayQueue = getQueueByName("employee-birthday-queue");
+    const nusacontactQueue = getQueueByName("nusacontact-contact-sync-queue");
 
     expect(fbstarQueue).toBeDefined();
     expect(fbstarQueue?.name).toBe("fbstar-reminder-queue");
@@ -27,6 +28,34 @@ describe("Server Queue Initialization", () => {
     expect(alertSilenceQueue?.name).toBe("alert-silence-queue");
     expect(employeeBirthdayQueue).toBeDefined();
     expect(employeeBirthdayQueue?.name).toBe("employee-birthday-queue");
+    expect(nusacontactQueue).toBeDefined();
+    expect(nusacontactQueue?.name).toBe("nusacontact-contact-sync-queue");
+  });
+
+  it("should not return 404 for registered nusacontact-contact-sync-queue on POST /api/v1/jobs/nusacontact-contact-sync-queue", async () => {
+    const queue = getQueueByName("nusacontact-contact-sync-queue");
+    if (queue) {
+      spyOn(queue, "add").mockImplementation(async () => {
+        return { id: "test-nwc-id" } as any;
+      });
+    }
+
+    const res = await app.request("/api/v1/jobs/nusacontact-contact-sync-queue", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-api-key": env.API_KEY,
+      },
+      body: JSON.stringify({
+        jobName: "sync-nusacontact-contact",
+        data: { phone: "628196066607" },
+      }),
+    });
+
+    expect(res.status).toBe(202);
+    const json = (await res.json()) as any;
+    expect(json.success).toBe(true);
+    expect(json.queue).toBe("nusacontact-contact-sync-queue");
   });
 
   it("should not return 404 for registered employee-birthday-queue on POST /api/v1/jobs/employee-birthday-queue", async () => {

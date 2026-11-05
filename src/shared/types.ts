@@ -108,6 +108,23 @@ export interface IforteGraphsSyncJobResult {
   syncedAt: string;
 }
 
+export interface NusacontactSyncJobData {
+  phone?: string;
+  phoneNumber?: string;
+  phone_number?: string;
+  [key: string]: any;
+}
+
+export interface NusacontactSyncJobResult {
+  success: boolean;
+  synced: boolean;
+  phone?: string;
+  name?: string;
+  branches?: string[];
+  message?: string;
+  syncedAt?: string;
+}
+
 export interface RepeatableJobInfo {
   key: string;
   name: string;

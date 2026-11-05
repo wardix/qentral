@@ -6,3 +6,4 @@ export * from "./employee-summary.queue";
 export * from "./iforte-graphs-sync.queue";
 export * from "./alert-silence.queue";
 export * from "./employee-birthday.queue";
+export * from "./nusacontact-contact-sync.queue";

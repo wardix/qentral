@@ -37,6 +37,9 @@ export interface EnvConfig {
   BIRTHDAY_GIFT_VOUCHER_TEMPLATE_PATH: string;
   BIRTHDAY_GIFT_VOUCHER_PERIOD_DAYS: number;
   BIRTHDAY_WISHES: string;
+  NIS_CALLER_ID_URL: string;
+  NUSACONTACT_SYNC_URL: string;
+  NUSACONTACT_API_KEY: string;
 }
 
 function parseNumber(value: string | undefined, defaultValue: number): number {
@@ -103,6 +106,12 @@ export function loadEnv(source: Record<string, string | undefined> = process.env
       30
     ),
     BIRTHDAY_WISHES: source.BIRTHDAY_WISHES || "Happy birthday",
+    NIS_CALLER_ID_URL:
+      source.NIS_CALLER_ID_URL ||
+      "https://transit.is5x.nusa.net.id/nis-gateway/customer/caller-id",
+    NUSACONTACT_SYNC_URL:
+      source.NUSACONTACT_SYNC_URL || "https://nwc.nusa.net.id/api/contacts",
+    NUSACONTACT_API_KEY: source.NUSACONTACT_API_KEY || "",
   };
 }
 

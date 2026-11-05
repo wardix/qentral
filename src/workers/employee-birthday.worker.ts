@@ -1,4 +1,6 @@
 import { Worker, type WorkerOptions, type Job } from "bullmq";
+import fs from "fs";
+import path from "path";
 import { createCanvas, loadImage } from "@napi-rs/canvas";
 import { getRedisConnection } from "../config/redis";
 import { env } from "../config/env";
@@ -150,7 +152,13 @@ export function filterTodayBirthdays(
 export async function renderBirthdayVoucher(
   options: RenderVoucherOptions
 ): Promise<Buffer> {
-  const templatePath = options.templatePath || env.BIRTHDAY_GIFT_VOUCHER_TEMPLATE_PATH;
+  let templatePath = options.templatePath || env.BIRTHDAY_GIFT_VOUCHER_TEMPLATE_PATH;
+  if (!fs.existsSync(templatePath)) {
+    const localAssetPath = path.resolve(process.cwd(), "assets/birthday-voucher-template.png");
+    if (fs.existsSync(localAssetPath)) {
+      templatePath = localAssetPath;
+    }
+  }
   const { name, endPeriodDate } = options;
 
   const textNameAreaX = 4;

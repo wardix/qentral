@@ -6,6 +6,7 @@ import { createEmployeeSummaryWorker } from "./employee-summary.worker";
 import { createIforteGraphsSyncWorker } from "./iforte-graphs-sync.worker";
 import { createAlertSilenceWorker } from "./alert-silence.worker";
 import { createEmployeeBirthdayWorker } from "./employee-birthday.worker";
+import { createNusacontactContactSyncWorker } from "./nusacontact-contact-sync.worker";
 
 let activeWorkers: Worker[] = [];
 
@@ -21,6 +22,7 @@ export function startWorkers(): Worker[] {
   const iforteGraphsSyncWorker = createIforteGraphsSyncWorker();
   const alertSilenceWorker = createAlertSilenceWorker();
   const employeeBirthdayWorker = createEmployeeBirthdayWorker();
+  const nusacontactWorker = createNusacontactContactSyncWorker();
   activeWorkers = [
     emailWorker,
     fbstarWorker,
@@ -29,6 +31,7 @@ export function startWorkers(): Worker[] {
     iforteGraphsSyncWorker,
     alertSilenceWorker,
     employeeBirthdayWorker,
+    nusacontactWorker,
   ];
 
   return activeWorkers;
@@ -52,3 +55,4 @@ export * from "./employee-summary.worker";
 export * from "./iforte-graphs-sync.worker";
 export * from "./alert-silence.worker";
 export * from "./employee-birthday.worker";
+export * from "./nusacontact-contact-sync.worker";
