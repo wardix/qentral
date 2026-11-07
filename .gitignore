@@ -22,3 +22,7 @@ bun.lockb
 # OS files
 .DS_Store
 Thumbs.db
+
+# Diagnostic & Scratch Scripts
+scripts/
+hasil-grafik-iforte.json

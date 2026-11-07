@@ -90,7 +90,6 @@ async function zabbixGetGraphIds(sessionId: string, filter: string): Promise<str
     {
       output: ["graphid"],
       search: { name: filter },
-      startSearch: true,
       sortfield: "graphid",
       sortOrder: "ASC",
     },
